@@ -40,15 +40,14 @@ class CommandTree:
                 self.get_trees(prefix)
             )
 
-    @staticmethod
-    def print_help_message(source: CommandSource, prefix: str):
+    def print_help_message(self, source: CommandSource, prefix: str):
         msgs_on_helper = RText('')
         msgs_on_admin = RText('')
         if source.has_permission_higher_than(1):
             # helper以上权限的添加信息
             msgs_on_helper = RTextList(
-                RText(prefix + ' ls orders', RColor.gray)
-                .c(RAction.suggest_command, "!!po ls orders")
+                RText(prefix + ' list orders', RColor.gray)
+                .c(RAction.suggest_command, f"{prefix} list orders")
                 .h(tr('hover')),
                 RText(f'{tr("help.hint_ls_orders")}\n')
             )
@@ -56,10 +55,10 @@ class CommandTree:
             # admin以上权限的添加信息
             msgs_on_admin = RTextList(
                 RText(prefix + tr('help.player_add'), RColor.gray)
-                .c(RAction.suggest_command, "!!po player add ")
+                .c(RAction.suggest_command, f"{prefix} player add ")
                 .h(tr('hover')), RText(f'{tr("help.hint_player_add")}\n'),
                 RText(prefix + tr('help.player_remove'), RColor.gray)
-                .c(RAction.suggest_command, "!!po player remove ")
+                .c(RAction.suggest_command, f"{prefix} player remove ")
                 .h(tr('hover')), RText(f'{tr("help.hint_player_remove")}\n'),
             )
 
@@ -68,28 +67,35 @@ class CommandTree:
                 RText('--------- §3MCDRpost §r---------\n'),
                 RText(f'{tr("desc")}\n'),
                 RText(f'{tr("help.title")}\n'),
-                RText(prefix, RColor.gray).c(RAction.suggest_command, "!!po").h(tr('hover')),
+                RText(prefix, RColor.gray).c(RAction.suggest_command, prefix).h(tr('hover')),
                 RText(f' | {tr("help.hint_help")}\n'),
-                RText(prefix + tr('help.p'), RColor.gray).c(RAction.suggest_command, "!!po p ").h(
-                    tr('hover')),
+                RText(prefix + tr('help.p'), RColor.gray)
+                .c(RAction.suggest_command, f"{prefix} post").h(tr('hover')),
                 RText(f'{tr("help.hint_p")}\n'),
-                RText(prefix + ' rl', RColor.gray).c(RAction.suggest_command, "!!po rl").h(tr('hover')),
+                RText(prefix + ' rl', RColor.gray)
+                .c(RAction.suggest_command, f"{prefix} receive_list").h(tr('hover')),
                 RText(f'{tr("help.hint_rl")}\n'),
-                RText(prefix + tr('help.r'), RColor.gray).c(RAction.suggest_command, "!!po r ").h(
-                    tr('hover')),
+                RText(prefix + tr('help.r'), RColor.gray)
+                .c(RAction.suggest_command, f"{prefix} receive").h(tr('hover')),
                 RText(f'{tr("help.hint_r")}\n'),
-                RText(prefix + ' pl', RColor.gray).c(RAction.suggest_command, "!!po pl").h(tr('hover')),
+                RText(prefix + ' pl', RColor.gray)
+                .c(RAction.suggest_command, f"{prefix} post_list").h(tr('hover')),
                 RText(f'{tr("help.hint_pl")}\n'),
-                RText(prefix + tr('help.c'), RColor.gray).c(RAction.suggest_command, "!!po c ").h(
-                    tr('hover')),
+                RText(prefix + tr('help.c'), RColor.gray)
+                .c(RAction.suggest_command, f"{prefix} cancel").h(tr('hover')),
                 RText(f'{tr("help.hint_c")}\n'),
-                RText(prefix + ' ls players', RColor.gray).c(RAction.suggest_command,
-                                                             "!!po ls players").h(
-                    tr('hover')),
+                RText(prefix + ' ls players', RColor.gray)
+                .c(RAction.suggest_command, f"{prefix} list players").h(tr('hover')),
                 RText(f'{tr("help.hint_ls_players")}\n'),
                 msgs_on_helper,
                 msgs_on_admin,
-                RText('-----------------------')
+                RText("§a『别名 Alias』§r\n"),
+                RText("    list -> ls 或 l \n", RColor.gray),
+                RText("    receive -> r \n", RColor.gray),
+                RText("    post -> p | cancel -> c\n", RColor.gray),
+                RText("    cancel -> c\n", RColor.gray),
+                RText(f'根指令: {", ".join(self.prefix)}\n'),
+                RText('-----------------------'),
             )
         )
 

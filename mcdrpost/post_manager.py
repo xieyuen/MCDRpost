@@ -48,10 +48,12 @@ class PostManager:
             if not self.config.auto_fix:
                 raise InvalidRegisteredPlayerList("已注册玩家有重复")
             self.logger.error("已注册玩家有重复")
+
         if self.config.auto_fix:
             need_fix = []
         else:
             need_fix = None
+
         for order_id, order in self.orders.orders.items():
             if str(order.id) != order_id:
                 if need_fix is None:

@@ -20,7 +20,7 @@ class IdGivenOrder(Serializable):
 
 class OrderData(Serializable):
     players: list[str] = []
-    orders: dict[str | int, IdGivenOrder] = []
+    orders: dict[str | int, IdGivenOrder] = {}
 
     def get_next_id(self) -> int:
         """获取下一个合法 id"""

@@ -1,3 +1,6 @@
+# Python
+*.py[oc]
+
 # PyCharm
 .idea/
 
