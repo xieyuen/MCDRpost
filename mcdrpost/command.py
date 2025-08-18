@@ -1,7 +1,6 @@
-from mcdreforged.api.types import CommandSource
+from mcdreforged.api.types import CommandSource, InfoCommandSource
 from mcdreforged.api.command import Literal, Text, GreedyText, RequirementNotMet, Integer
 from mcdreforged.api.rtext import RText, RTextList, RColor, RAction
-from mcdreforged.command.command_source import InfoCommandSource
 
 from mcdrpost.utils import tr
 from mcdrpost.post_manager import PostManager

@@ -1,8 +1,4 @@
-from typing import Any
-
 from mcdreforged.utils.serializer import Serializable
-
-from mcdrpost.exception import InvalidOrder
 
 
 class Order(Serializable):

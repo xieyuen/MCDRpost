@@ -1,9 +1,10 @@
-from mcdreforged.utils.exception import IllegalPluginStructure
-
-
-class InvalidOrder(IllegalPluginStructure):
+class InvalidData(ValueError):
     pass
 
 
-class InvalidRegisteredPlayerList(IllegalPluginStructure):
+class InvalidOrder(InvalidData):
+    pass
+
+
+class InvalidRegisteredPlayerList(InvalidData):
     pass
