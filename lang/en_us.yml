@@ -30,16 +30,16 @@ mcdrpost:
   reply_success_post: "§6* Items are stored at the transfer station, waiting for the other party to receive\n* Use §7!!po pl§6 to check sent orders"
   hint_receive: "§6[MCDRpost] §eYou have a new shipment, Use §7!!po rl§e to check receive orders\n* Use §7!!po r {0}§e to receive the express directly"
 
-  no_porders: "§6* You currently have no sent orders in transit~"
-  list_porders_title: "order_id    |   receiver  |   send_time  |   comment"
+  no_post_orders: "§6* You currently have no sent orders in transit~"
+  list_post_orders_title: "order_id    |   receiver  |   send_time  |   comment"
   hint_cancel: "§6Use command §7!!po c [orderid] §6to cancel the order§r"
 
   not_receiver: "§e* You are not the receiver of this order and have no right to operate on it, please check"
   uncheck_orderid: "§e* The order id is not found, please check"
   receive_success: "§e* Order {0} received successfully, item received to off-hand"
 
-  no_rorders: "§e* You currently have no received orders~"
-  list_rorders_title: "order id  |  sender  |  send time  |   comment"
+  no_receive_orders: "§e* You currently have no received orders~"
+  list_receive_orders_title: "order id  |  sender  |  send time  |   comment"
   hint_order_receive: "§6Use §7!!po r [orderid]§6 to receive the item§r"
 
   not_sender: "§e* You are not the sender of this order and have no right to operate on it, please check"
@@ -59,8 +59,8 @@ mcdrpost:
   only_for_player: "§c* This command is for player use only"
   no_permission: "§c* Sorry, you do not have permission to use this command"
   no_input_receiver: "§e* No receiver entered, §7!!po§e to check help message"
-  no_input_rorderid: "§e* No order id entered, §7!!po§e to check help message"
-  no_input_corderid: "§e* No order id entered, §7!!po§e to check help message"
+  no_input_receive_orderid: "§e* No order id entered, §7!!po§e to check help message"
+  no_input_cancel_orderid: "§e* No order id entered, §7!!po§e to check help message"
   command_incomplete: "§e* Incomplete command, §7!!po§e to check help message"
 
   wait_for_receive: "§6[MCDRpost] §eYou have a pending shipment~ Use §7!!po rl§e to check"

@@ -30,16 +30,16 @@ mcdrpost:
   reply_success_post: "§6* 物品存放于中转站，等待对方接收\n* 使用 §7!!po pl §6可以查看还未被查收的发件列表"
   hint_receive: "§6[MCDRpost] §e您有一件新快件，命令 §7!!po rl §e查看收件箱\n* 命令 §7!!po r {0} §e直接收取该快件"
 
-  no_porders: "§6* 您当前没有快件订单在中转站~"
-  list_porders_title: "单号    |   收件人  |   发件时间  |   备注信息"
+  no_post_orders: "§6* 您当前没有快件订单在中转站~"
+  list_post_orders_title: "单号    |   收件人  |   发件时间  |   备注信息"
   hint_cancel: "§6使用命令 §7!!po c [单号] §6取消快件§r"
 
   not_receiver: "§e* 您非该订单收件人，无权对其操作，请检查输入"
   uncheck_orderid: "§e* 未查询到该单号，请检查输入"
   receive_success: "§e* 已成功收取快件 {0}，物品接收至副手"
 
-  no_rorders: "§e* 您当前没有待收快件~"
-  list_rorders_title: "单号    |   发件人  |   发件时间  |   备注信息"
+  no_receive_orders: "§e* 您当前没有待收快件~"
+  list_receive_orders_title: "单号    |   发件人  |   发件时间  |   备注信息"
   hint_order_receive: "§6使用命令 §7!!po r [单号] §6来接收快件物品§r"
 
   not_sender: "§e* 该订单非您寄送，您无权对其操作，请检查输入"
@@ -59,8 +59,8 @@ mcdrpost:
   only_for_player: "§c* 该命令仅供玩家使用"
   no_permission: "§c* 抱歉，您没有权限使用该命令"
   no_input_receiver: "§e* 未输入收件人，§7!!po §e可查看帮助信息"
-  no_input_rorderid: "§e* 未输入收件单号，§7!!po §e可查看帮助信息"
-  no_input_corderid: "§e* 未输入需要取消的单号，§7!!po §e可查看帮助信息"
+  no_input_receive_orderid: "§e* 未输入收件单号，§7!!po §e可查看帮助信息"
+  no_input_cancel_orderid: "§e* 未输入需要取消的单号，§7!!po §e可查看帮助信息"
   command_incomplete: "§e* 输入命令不完整，§7!!po §e可查看帮助信息"
 
   wait_for_receive: "§6[MCDRpost] §e您有待查收的快件~ 命令 §7!!po rl §e查看详情"
