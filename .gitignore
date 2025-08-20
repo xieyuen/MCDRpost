@@ -1,0 +1,12 @@
+# Python
+*.py[oc]
+
+# PyCharm
+.idea/
+
+# dependancies
+minecraft_data_api
+
+# packed plugins
+*.mcdr
+*.pyz
