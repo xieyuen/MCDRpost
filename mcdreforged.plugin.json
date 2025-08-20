@@ -10,7 +10,7 @@
     "Flyky",
     "xieyuen"
   ],
-  "link": "https://github.com/xieyuen/MCDRpost/tree/dev",
+  "link": "https://github.com/xieyuen/MCDRpost/",
   "dependencies": {
     "python": ">=3.10",
     "mcdreforged": ">=2.0.1",
