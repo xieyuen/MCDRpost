@@ -12,8 +12,8 @@
   ],
   "link": "https://github.com/xieyuen/MCDRpost/",
   "dependencies": {
-    "python": ">=3.10",
-    "mcdreforged": ">=2.0.1",
+    "python": ">=3.11",
+    "mcdreforged": ">=2.10",
     "minecraft_data_api": "*"
   },
   "resources": [

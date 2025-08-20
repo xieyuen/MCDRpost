@@ -10,6 +10,7 @@ minecraft_data_api
 # packed plugins
 *.mcdr
 *.pyz
+build/
 
 # uv
 uv.lock
