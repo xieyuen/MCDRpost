@@ -2,7 +2,7 @@ from collections import defaultdict
 from typing import DefaultDict, TYPE_CHECKING
 
 from mcdrpost import constants
-from mcdrpost.order_data import OrderInfoDict, Order, OrderData, OrderInfo
+from mcdrpost.order_data import Order, OrderData, OrderInfo, OrderInfoDict
 from mcdrpost.utils import tr
 from mcdrpost.utils.exception import InvalidOrder
 from mcdrpost.utils.translation_tags import Tags
@@ -87,6 +87,9 @@ class OrderManager:
             return False
         self._order_data.players.remove(player)
         return True
+
+    def get_players(self) -> list[str]:
+        return self._order_data.players
 
     def get_next_id(self) -> int:
         order_id = 1
