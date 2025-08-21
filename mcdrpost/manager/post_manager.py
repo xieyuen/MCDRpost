@@ -1,6 +1,7 @@
 import time
 from typing import Callable
 
+from mcdreforged.api.decorator import new_thread
 from mcdreforged.api.types import Info, InfoCommandSource, PluginServerInterface
 
 from mcdrpost import constants
@@ -72,9 +73,12 @@ class PostManager:
 
         # 已注册的玩家，向他推送订单消息（如果有）
         if self.order_manager.has_unreceived_order(player):
-            time.sleep(self.config_manager.configuration.receive_tip_delay)
-            server.tell(player, tr(Tags.wait_for_receive))
-            play_sound.has_something_to_receive(server, player)
+            @new_thread('MCDR Post-login tip')
+            def send_receive_tip():
+                time.sleep(self.config_manager.configuration.receive_tip_delay)
+                server.tell(player, tr(Tags.wait_for_receive))
+                play_sound.has_something_to_receive(server, player)
+            send_receive_tip()
 
     def on_server_stop(self, _server: PluginServerInterface, _server_return_code: int):
         """事件: 服务器关闭--保存配置信息和订单信息"""
