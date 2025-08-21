@@ -14,20 +14,29 @@ END_LINE = '\n'
 
 
 class CommandManager:
+    """命令管理器"""
+
     def __init__(self, post_manager: "PostManager"):
         self._post_manager: "PostManager" = post_manager
         self._server: PluginServerInterface = post_manager.server
         self._prefixes: list[str] = post_manager.config_manager.configuration.command_prefixes
 
     def register(self):
+        """注册命令树
+
+        在 on_load 中调用
+        """
         for prefix in self._prefixes:
             self._server.register_help_message(prefix, {
                 "en_us": "post/teleport weapon hands items",
                 "zh_cn": "传送/收寄副手物品",
             })
-            self._server.register_command(self.get_node(prefix))
+            self._server.register_command(
+                self.generate_command_node(prefix)
+            )
 
-    def print_help_message(self, source: CommandSource, prefix: str):
+    def output_help_message(self, source: CommandSource, prefix: str):
+        """辅助函数：打印帮助信息"""
         msgs_on_helper = RText('')
         msgs_on_admin = RText('')
         if source.has_permission(2):
@@ -88,7 +97,8 @@ class CommandManager:
         )
 
     def output_post_list(self, src: InfoCommandSource):
-        post_list = self._post_manager.order_manger.get_orders_by_sender(
+        """辅助函数：输出玩家发送的订单列表"""
+        post_list = self._post_manager.order_manager.get_orders_by_sender(
             src.get_info().player
         )
 
@@ -99,7 +109,7 @@ class CommandManager:
         msg = ""
 
         for order in post_list:
-            msg += f"{order.id}  | {order.receiver}  | {order.time}  | {order.info}\n"
+            msg += f"{order.id}  | {order.receiver}  | {order.time}  | {order.comment}\n"
 
         src.reply(
             '===========================================\n'
@@ -112,7 +122,8 @@ class CommandManager:
         )
 
     def output_receive_list(self, src: InfoCommandSource):
-        receive_list = self._post_manager.order_manger.get_orders_by_receiver(
+        """辅助函数：输出玩家待接收的邮件列表"""
+        receive_list = self._post_manager.order_manager.get_orders_by_receiver(
             src.get_info().player
         )
 
@@ -123,7 +134,7 @@ class CommandManager:
         msg = ""
 
         for order in receive_list:
-            msg += f"{order.id}  | {order.sender}  | {order.time}  | {order.info}\n"
+            msg += f"{order.id}  | {order.sender}  | {order.time}  | {order.comment}\n"
 
         src.reply(
             '===========================================\n'
@@ -136,7 +147,8 @@ class CommandManager:
         )
 
     def output_all_orders(self, src: InfoCommandSource):
-        all_orders = self._post_manager.order_manger.get_orders()
+        """辅助函数：输出所有订单列表"""
+        all_orders = self._post_manager.order_manager.get_orders()
 
         if not all_orders:
             src.reply(tr(Tags.no_orders))
@@ -154,245 +166,203 @@ class CommandManager:
             .format(tr(Tags.list_orders_title), msg)
         )
 
-    def get_node(self, prefix: str):
-        """生成指令树"""
+    def gen_post_node(self, node_name: str) -> Literal:
         return (
-            Literal(prefix).
-            runs(lambda src: self.print_help_message(src, prefix)).
+            Literal(node_name).
+            requires(lambda src: src.is_player).
+            on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.only_for_player)), handled=True).
+            runs(lambda src: src.reply(tr(Tags.no_input_receiver))).
             then(
-                Literal('p').
-                requires(lambda src: src.is_player).
-                on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.only_for_player)), handled=True).
-                runs(lambda src: src.reply(tr(Tags.no_input_receiver))).
+                Text('receiver').
+                suggests(self._post_manager.order_manager.get_players).
+                runs(lambda src, ctx: self._post_manager.post(src, ctx['receiver'])).
                 then(
-                    Text('receiver').
-                    suggests(self._post_manager.order_manger.get_players).
-                    runs(lambda src, ctx: self._post_manager.post(src, ctx['receiver'])).
-                    then(
-                        GreedyText('comment').
-                        runs(lambda src, ctx: self._post_manager.post(src, ctx['receiver'], ctx['comment']))
+                    GreedyText('comment').
+                    runs(lambda src, ctx: self._post_manager.post(src, ctx['receiver'], ctx['comment']))
+                )
+            )
+        )
+
+    def gen_post_list_node(self, node_name: str) -> Literal:
+        return (
+            Literal(node_name).
+            requires(lambda src: src.is_player).
+            on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.only_for_player)), handled=True).
+            runs(lambda src: self.output_post_list(src))
+        )
+
+    def gen_receive_node(self, node_name: str) -> Literal:
+        return (
+            Literal(node_name).
+            requires(lambda src: src.is_player).
+            on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.only_for_player)), handled=True).
+            runs(lambda src: src.reply(tr(Tags.no_input_receive_orderid))).
+            then(
+                Integer('orderid').
+                suggests(
+                    lambda src: [
+                        str(i) for i in
+                        self._post_manager.order_manager.get_orderid_by_receiver(src.get_info().player)
+                    ]
+                ).
+                runs(
+                    lambda src, ctx: (
+                        self._post_manager.receive(src, ctx['orderid']),
+                        src.reply(tr(Tags.receive_success, ctx['orderid']))
                     )
                 )
-            ).
+            )
+        )
+
+    def gen_receive_list_node(self, node_name: str) -> Literal:
+        return (
+            Literal(node_name).
+            requires(lambda src: src.is_player).
+            on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.only_for_player)), handled=True).
+            runs(lambda src: self.output_receive_list(src))
+        )
+
+    def gen_cancel_node(self, node_name: str) -> Literal:
+        return (
+            Literal(node_name).
+            requires(lambda src: src.is_player).
+            on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.only_for_player)), handled=True).
+            runs(lambda src: src.reply(tr(Tags.no_input_cancel_orderid))).
             then(
-                Literal('post').
-                requires(lambda src: src.is_player).
-                on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.only_for_player)), handled=True).
-                runs(lambda src: src.reply(tr(Tags.no_input_receiver))).
-                then(
-                    Text('receiver').
-                    suggests(self._post_manager.order_manger.get_players).
-                    runs(lambda src, ctx: self._post_manager.post(src, ctx['receiver'])).
-                    then(
-                        GreedyText('comment').
-                        runs(lambda src, ctx: self._post_manager.post(src, ctx['receiver'], ctx['comment']))
+                Integer('orderid').
+                suggests(
+                    lambda src: [
+                        str(i) for i in
+                        self._post_manager.order_manager.get_orderid_by_sender(src.get_info().player)
+                    ]
+                ).
+                runs(
+                    lambda src, ctx: (
+                        self._post_manager.receive(src, ctx['orderid']),
+                        src.reply(tr(Tags.cancel_success, ctx['orderid']))
                     )
                 )
+            )
+        )
+
+    def gen_list_node(self, node_name: str) -> Literal:
+        return (
+            Literal(node_name).
+            requires(lambda src: src.has_permission(1)).
+            on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.no_permission)), handled=True).
+            runs(lambda src: src.reply(tr(Tags.command_incomplete))).
+            then(
+                Literal('players').
+                runs(lambda src: src.reply(
+                    tr(Tags.list_player_title) + str(self._post_manager.order_manager.get_players())
+                ))
             ).
             then(
-                Literal('pl').
-                requires(lambda src: src.is_player).
-                on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.only_for_player)), handled=True).
-                runs(lambda src: self.output_post_list(src))
-            ).
-            then(
-                Literal('post_list').
-                requires(lambda src: src.is_player).
-                on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.only_for_player)), handled=True).
-                runs(lambda src: self.output_post_list(src))
-            ).
-            then(
-                Literal('r').
-                requires(lambda src: src.is_player).
-                on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.only_for_player)), handled=True).
-                runs(lambda src: src.reply(tr(Tags.no_input_receive_orderid))).
-                then(
-                    Integer('orderid').
-                    suggests(
-                        lambda src: self._post_manager.order_manger.get_orderid_by_receiver(src.get_info().player)).
-                    runs(
-                        lambda src, ctx: (
-                            self._post_manager.receive(src, ctx['orderid']),
-                            src.reply(tr(Tags.receive_success, ctx['orderid']))
-                        )
-                    )
-                )
+                Literal('orders').
+                requires(lambda src: src.has_permission_higher_than(1)).
+                on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.no_permission)), handled=True).
+                runs(lambda src: self.output_all_orders(src))
             ).
             then(
                 Literal('receive').
                 requires(lambda src: src.is_player).
                 on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.only_for_player)), handled=True).
-                runs(lambda src: src.reply(tr(Tags.no_input_receive_orderid))).
-                then(
-                    Integer('orderid').
-                    suggests(
-                        lambda src: self._post_manager.order_manger.get_orderid_by_receiver(src.get_info().player)).
-                    runs(
-                        lambda src, ctx: (
-                            self._post_manager.receive(src, ctx['orderid']),
-                            src.reply(tr(Tags.receive_success, ctx['orderid']))
-                        )
-                    )
-                )
-            ).
-            then(
-                Literal('rl').
-                requires(lambda src: src.is_player).
-                on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.only_for_player)), handled=True).
                 runs(lambda src: self.output_receive_list(src))
-            ).
-            then(
-                Literal('receive_list').
+            ).then(
+                Literal('post').
                 requires(lambda src: src.is_player).
                 on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.only_for_player)), handled=True).
-                runs(lambda src: self.output_receive_list(src))
-            ).
+                runs(lambda src: self.output_post_list(src))
+            )
+        )
+
+    def gen_player_node(self, node_name: str) -> Literal:
+        return (
+            Literal(node_name).
+            requires(lambda src: src.has_permission_higher_than(2)).
+            on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.no_permission)), handled=True).
+            runs(lambda src: src.reply(tr(Tags.command_incomplete))).
             then(
-                Literal('c').
-                requires(lambda src: src.is_player).
-                on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.only_for_player)), handled=True).
-                runs(lambda src: src.reply(tr(Tags.no_input_cancel_orderid))).
-                then(
-                    Integer('orderid').
-                    suggests(lambda src: self._post_manager.order_manger.get_orderid_by_sender(src.get_info().player)).
-                    runs(
-                        lambda src, ctx: (
-                            self._post_manager.receive(src, ctx['orderid']),
-                            src.reply(tr(Tags.cancel_success, ctx['orderid']))
-                        )
-                    )
-                )
-            ).
-            then(
-                Literal('cancel').
-                requires(lambda src: src.is_player).
-                on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.only_for_player)), handled=True).
-                runs(lambda src: src.reply(tr(Tags.no_input_cancel_orderid))).
-                then(
-                    Integer('orderid').
-                    suggests(lambda src: self._post_manager.order_manger.get_orderid_by_sender(src.get_info().player)).
-                    runs(
-                        lambda src, ctx: (
-                            self._post_manager.receive(src, ctx['orderid']),
-                            src.reply(tr(Tags.cancel_success, ctx['orderid']))
-                        )
-                    )
-                )
-            ).
-            then(
-                Literal('ls').
-                requires(lambda src: src.has_permission(1)).
-                on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.no_permission)), handled=True).
+                Literal('add').
                 runs(lambda src: src.reply(tr(Tags.command_incomplete))).
                 then(
-                    Literal('players').
-                    runs(lambda src: src.reply(
-                        tr(Tags.list_player_title) + str(self._post_manager.order_manger.get_players())
-                    ))
-                ).
-                then(
-                    Literal('orders').
-                    requires(lambda src: src.has_permission_higher_than(1)).
-                    on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.no_permission)), handled=True).
-                    runs(lambda src: self.output_all_orders(src))
-                ).
-                then(
-                    Literal('receive').
-                    requires(lambda src: src.is_player).
-                    on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.only_for_player)), handled=True).
-                    runs(lambda src: self.output_receive_list(src))
-                ).then(
-                    Literal('post').
-                    requires(lambda src: src.is_player).
-                    on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.only_for_player)), handled=True).
-                    runs(lambda src: self.output_post_list(src))
+                    Text('player_id').
+                    runs(lambda src, ctx: self._post_manager.order_manager.add_player(ctx['player_id']))
                 )
             ).
             then(
-                Literal('list').
-                requires(lambda src: src.has_permission_higher_than(0)).
-                on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.no_permission)), handled=True).
+                Literal('remove').
                 runs(lambda src: src.reply(tr(Tags.command_incomplete))).
                 then(
-                    Literal('players').
-                    runs(lambda src: src.reply(
-                        tr(Tags.list_player_title) + str(self._post_manager.order_manger.get_players())
-                    ))
-                ).
-                then(
-                    Literal('orders').
-                    requires(lambda src: src.has_permission_higher_than(1)).
-                    on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.no_permission)), handled=True).
-                    runs(lambda src: self.output_all_orders(src))
-                ).
-                then(
-                    Literal('receive').
-                    requires(lambda src: src.is_player).
-                    on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.only_for_player)), handled=True).
-                    runs(lambda src: self.output_receive_list(src))
-                ).then(
-                    Literal('post').
-                    requires(lambda src: src.is_player).
-                    on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.only_for_player)), handled=True).
-                    runs(lambda src: self.output_post_list(src))
-                )
-            ).
-            then(
-                Literal('player').
-                requires(lambda src: src.has_permission_higher_than(2)).
-                on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.no_permission)), handled=True).
-                runs(lambda src: src.reply(tr(Tags.command_incomplete))).
-                then(
-                    Literal('add').
-                    runs(lambda src: src.reply(tr(Tags.command_incomplete))).
-                    then(
-                        Text('player_id').
-                        runs(lambda src, ctx: self._post_manager.order_manger.add_player(src, ctx['player_id']))
-                    )
-                ).
-                then(
-                    Literal('remove').
-                    runs(lambda src: src.reply(tr(Tags.command_incomplete))).
-                    then(
-                        Text('player_id').
-                        suggests(self._post_manager.order_manger.get_players).
-                        runs(lambda src, ctx: self._post_manager.order_manger.remove_player(src, ctx['player_id']))
-                    )
-                )
-            ).
-            then(
-                Literal('save').
-                requires(lambda src: src.has_permission(3)).
-                runs(self._post_manager.save).
-                then(
-                    Literal('all').
-                    requires(lambda src: src.has_permission(3)).
-                    runs(self._post_manager.save)
-                ).
-                then(
-                    Literal('config').
-                    requires(lambda src: src.has_permission(3)).
-                    runs(self._post_manager.config_manager.save)
-                ).
-                then(
-                    Literal('orders').
-                    requires(lambda src: src.has_permission(3)).
-                    runs(self._post_manager.order_manger.save)
-                )
-            ).
-            then(
-                Literal('reload').
-                requires(lambda src: src.has_permission(3)).
-                runs(self._post_manager.reload).
-                then(
-                    Literal('config').
-                    requires(lambda src: src.has_permission(3)).
-                    runs(self._post_manager.config_manager.load)
-                ).
-                then(
-                    Literal('orders').
-                    requires(lambda src: src.has_permission(3)).
-                    runs(self._post_manager.order_manger.reload)
+                    Text('player_id').
+                    suggests(self._post_manager.order_manager.get_players).
+                    runs(lambda src, ctx: self._post_manager.order_manager.remove_player(ctx['player_id']))
                 )
             )
+        )
+
+    def gen_save_node(self, node_name: str) -> Literal:
+        return (
+            Literal(node_name).
+            requires(lambda src: src.has_permission(3)).
+            runs(self._post_manager.save).
+            then(
+                Literal('all').
+                requires(lambda src: src.has_permission(3)).
+                runs(self._post_manager.save)
+            ).
+            then(
+                Literal('config').
+                requires(lambda src: src.has_permission(3)).
+                runs(self._post_manager.config_manager.save)
+            ).
+            then(
+                Literal('orders').
+                requires(lambda src: src.has_permission(3)).
+                runs(self._post_manager.order_manager.save)
+            )
+        )
+
+    def gen_reload_node(self, node_name: str) -> Literal:
+        return (
+            Literal(node_name).
+            requires(lambda src: src.has_permission(3)).
+            runs(self._post_manager.reload).
+            then(
+                Literal('all').
+                requires(lambda src: src.has_permission(3)).
+                runs(self._post_manager.reload)
+            ).
+            then(
+                Literal('config').
+                requires(lambda src: src.has_permission(3)).
+                runs(self._post_manager.config_manager.load)
+            ).
+            then(
+                Literal('orders').
+                requires(lambda src: src.has_permission(3)).
+                runs(self._post_manager.order_manager.load)
+            )
+        )
+
+    def generate_command_node(self, prefix: str):
+        """生成指令树"""
+        return (
+            Literal(prefix).
+            runs(lambda src: self.output_help_message(src, prefix)).
+            then(self.gen_post_node('p')).
+            then(self.gen_post_node('post')).
+            then(self.gen_post_list_node('pl')).
+            then(self.gen_post_list_node('post_list')).
+            then(self.gen_receive_node('r')).
+            then(self.gen_receive_node('receive')).
+            then(self.gen_receive_list_node('rl')).
+            then(self.gen_receive_list_node('receive_list')).
+            then(self.gen_cancel_node('c')).
+            then(self.gen_cancel_node('cancel')).
+            then(self.gen_list_node('ls')).
+            then(self.gen_list_node('list')).
+            then(self.gen_player_node('player')).
+            then(self.gen_save_node('save')).
+            then(self.gen_reload_node('reload'))
         )
