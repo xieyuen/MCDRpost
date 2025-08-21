@@ -1,5 +1,4 @@
 import time
-from typing import Callable
 
 from mcdreforged.api.decorator import new_thread
 from mcdreforged.api.types import Info, InfoCommandSource, PluginServerInterface
@@ -12,6 +11,7 @@ from mcdrpost.order_data import OrderInfo
 from mcdrpost.utils import get_formatted_item, get_formatted_time, get_offhand_item, play_sound, tr
 from mcdrpost.utils.replace_offhand_item import replace_for_17, replace_for_lower_17
 from mcdrpost.utils.translation_tags import Tags
+from mcdrpost.utils.types import ReplaceFunction
 
 
 class PostManager:
@@ -31,9 +31,9 @@ class PostManager:
         self.command_manager: CommandManager = CommandManager(self)
 
         if self.config_manager.environment.item_command:
-            self._replace: Callable[[PluginServerInterface, str, str], None] = replace_for_17
+            self._replace: ReplaceFunction = replace_for_17
         else:
-            self._replace: Callable[[PluginServerInterface, str, str], None] = replace_for_lower_17
+            self._replace: ReplaceFunction = replace_for_lower_17
 
     def replace(self, player: str, item: str) -> None:
         """替换副手物品
@@ -78,6 +78,7 @@ class PostManager:
                 time.sleep(self.config_manager.configuration.receive_tip_delay)
                 server.tell(player, tr(Tags.wait_for_receive))
                 play_sound.has_something_to_receive(server, player)
+
             send_receive_tip()
 
     def on_server_stop(self, _server: PluginServerInterface, _server_return_code: int):

@@ -67,14 +67,14 @@ class OrderManager:
         self.__check_orders()
         self._build_index()
 
-    def save(self):
+    def save(self) -> None:
         self._post_manager.server.save_config_simple(
             self._order_data,
             constants.ORDERS_DATA_FILE_NAME,
             file_format=constants.ORDERS_DATA_FILE_TYPE,
         )
 
-    def is_player_registered(self, player: str):
+    def is_player_registered(self, player: str) -> bool:
         """检查玩家是否已经注册
 
         Args:

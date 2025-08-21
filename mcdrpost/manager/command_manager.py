@@ -16,12 +16,12 @@ END_LINE = '\n'
 class CommandManager:
     """命令管理器"""
 
-    def __init__(self, post_manager: "PostManager"):
+    def __init__(self, post_manager: "PostManager") -> None:
         self._post_manager: "PostManager" = post_manager
         self._server: PluginServerInterface = post_manager.server
         self._prefixes: list[str] = post_manager.config_manager.configuration.command_prefixes
 
-    def register(self):
+    def register(self) -> None:
         """注册命令树
 
         在 on_load 中调用
@@ -35,7 +35,7 @@ class CommandManager:
                 self.generate_command_node(prefix)
             )
 
-    def output_help_message(self, source: CommandSource, prefix: str):
+    def output_help_message(self, source: CommandSource, prefix: str) -> None:
         """辅助函数：打印帮助信息"""
         msgs_on_helper = RText('')
         msgs_on_admin = RText('')
@@ -96,7 +96,7 @@ class CommandManager:
             )
         )
 
-    def output_post_list(self, src: InfoCommandSource):
+    def output_post_list(self, src: InfoCommandSource) -> None:
         """辅助函数：输出玩家发送的订单列表"""
         post_list = self._post_manager.order_manager.get_orders_by_sender(
             src.get_info().player
@@ -121,7 +121,7 @@ class CommandManager:
             .format(tr(Tags.list_post_orders_title), msg, tr(Tags.hint_cancel))
         )
 
-    def output_receive_list(self, src: InfoCommandSource):
+    def output_receive_list(self, src: InfoCommandSource) -> None:
         """辅助函数：输出玩家待接收的邮件列表"""
         receive_list = self._post_manager.order_manager.get_orders_by_receiver(
             src.get_info().player
@@ -146,7 +146,7 @@ class CommandManager:
             .format(tr(Tags.list_receive_orders_title), msg, tr(Tags.hint_order_receive))
         )
 
-    def output_all_orders(self, src: InfoCommandSource):
+    def output_all_orders(self, src: InfoCommandSource) -> None:
         """辅助函数：输出所有订单列表"""
         all_orders = self._post_manager.order_manager.get_orders()
 
@@ -345,7 +345,7 @@ class CommandManager:
             )
         )
 
-    def generate_command_node(self, prefix: str):
+    def generate_command_node(self, prefix: str) -> Literal:
         """生成指令树"""
         return (
             Literal(prefix).
