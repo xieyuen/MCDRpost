@@ -1,9 +1,10 @@
-from typing import TYPE_CHECKING
+from typing import Literal as LiteralType, TYPE_CHECKING
 
 from mcdreforged.api.command import GreedyText, Integer, Literal, RequirementNotMet, Text
 from mcdreforged.api.rtext import RAction, RColor, RText, RTextList
 from mcdreforged.api.types import CommandSource, InfoCommandSource, PluginServerInterface
 
+from mcdrpost.config.configuration import CommandPermission
 from mcdrpost.utils import tr
 from mcdrpost.utils.translation_tags import Tags
 
@@ -20,6 +21,7 @@ class CommandManager:
         self._post_manager: "PostManager" = post_manager
         self._server: PluginServerInterface = post_manager.server
         self._prefixes: list[str] = post_manager.config_manager.configuration.command_prefixes
+        self._perm: CommandPermission = post_manager.config_manager.configuration.command_permission
 
     def register(self) -> None:
         """注册命令树
@@ -169,8 +171,10 @@ class CommandManager:
     def gen_post_node(self, node_name: str) -> Literal:
         return (
             Literal(node_name).
-            requires(lambda src: src.is_player).
-            on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.only_for_player)), handled=True).
+            requires(lambda src: src.is_player and src.has_permission(self._perm.post)).
+            on_error(RequirementNotMet, lambda src: src.reply(
+                tr(Tags.no_permission if src.is_player else Tags.only_for_player)
+            ), handled=True).
             runs(lambda src: src.reply(tr(Tags.no_input_receiver))).
             then(
                 Text('receiver').
@@ -186,16 +190,20 @@ class CommandManager:
     def gen_post_list_node(self, node_name: str) -> Literal:
         return (
             Literal(node_name).
-            requires(lambda src: src.is_player).
-            on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.only_for_player)), handled=True).
+            requires(lambda src: src.is_player and src.has_permission(self._perm.post)).
+            on_error(RequirementNotMet, lambda src: src.reply(
+                tr(Tags.no_permission if not src.is_player else Tags.only_for_player)
+            ), handled=True).
             runs(lambda src: self.output_post_list(src))
         )
 
     def gen_receive_node(self, node_name: str) -> Literal:
         return (
             Literal(node_name).
-            requires(lambda src: src.is_player).
-            on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.only_for_player)), handled=True).
+            requires(lambda src: src.is_player and src.has_permission(self._perm.receive)).
+            on_error(RequirementNotMet, lambda src: src.reply(
+                tr(Tags.no_permission if src.is_player else Tags.only_for_player)
+            ), handled=True).
             runs(lambda src: src.reply(tr(Tags.no_input_receive_orderid))).
             then(
                 Integer('orderid').
@@ -217,16 +225,20 @@ class CommandManager:
     def gen_receive_list_node(self, node_name: str) -> Literal:
         return (
             Literal(node_name).
-            requires(lambda src: src.is_player).
-            on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.only_for_player)), handled=True).
+            requires(lambda src: src.is_player and src.has_permission(self._perm.receive)).
+            on_error(RequirementNotMet, lambda src: src.reply(
+                tr(Tags.no_permission if src.is_player else Tags.only_for_player)
+            ), handled=True).
             runs(lambda src: self.output_receive_list(src))
         )
 
     def gen_cancel_node(self, node_name: str) -> Literal:
         return (
             Literal(node_name).
-            requires(lambda src: src.is_player).
-            on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.only_for_player)), handled=True).
+            requires(lambda src: src.is_player and src.has_permission(self._perm.cancel)).
+            on_error(RequirementNotMet, lambda src: src.reply(
+                tr(Tags.no_permission if src.is_player else Tags.only_for_player)
+            ), handled=True).
             runs(lambda src: src.reply(tr(Tags.no_input_cancel_orderid))).
             then(
                 Integer('orderid').
@@ -248,30 +260,33 @@ class CommandManager:
     def gen_list_node(self, node_name: str) -> Literal:
         return (
             Literal(node_name).
-            requires(lambda src: src.has_permission(1)).
-            on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.no_permission)), handled=True).
             runs(lambda src: src.reply(tr(Tags.command_incomplete))).
             then(
                 Literal('players').
+                requires(lambda src: src.has_permission(self._perm.list_player)).
                 runs(lambda src: src.reply(
                     tr(Tags.list_player_title) + str(self._post_manager.order_manager.get_players())
                 ))
             ).
             then(
                 Literal('orders').
-                requires(lambda src: src.has_permission_higher_than(1)).
+                requires(lambda src: src.has_permission(self._perm.list_orders)).
                 on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.no_permission)), handled=True).
                 runs(lambda src: self.output_all_orders(src))
             ).
             then(
                 Literal('receive').
-                requires(lambda src: src.is_player).
-                on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.only_for_player)), handled=True).
+                requires(lambda src: src.is_player and src.has_permission(self._perm.receive)).
+                on_error(RequirementNotMet, lambda src: src.reply(
+                    tr(Tags.no_permission if src.is_player else Tags.only_for_player)
+                ), handled=True).
                 runs(lambda src: self.output_receive_list(src))
             ).then(
                 Literal('post').
-                requires(lambda src: src.is_player).
-                on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.only_for_player)), handled=True).
+                requires(lambda src: src.is_player and src.has_permission(self._perm.post)).
+                on_error(RequirementNotMet, lambda src: src.reply(
+                    tr(Tags.no_permission if src.is_player else Tags.only_for_player)
+                ), handled=True).
                 runs(lambda src: self.output_post_list(src))
             )
         )
@@ -279,7 +294,7 @@ class CommandManager:
     def gen_player_node(self, node_name: str) -> Literal:
         return (
             Literal(node_name).
-            requires(lambda src: src.has_permission_higher_than(2)).
+            requires(lambda src: src.has_permission(self._perm.player)).
             on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.no_permission)), handled=True).
             runs(lambda src: src.reply(tr(Tags.command_incomplete))).
             then(
@@ -301,54 +316,42 @@ class CommandManager:
             )
         )
 
-    def gen_save_node(self, node_name: str) -> Literal:
+    def _gen_save_load_node(self, node_name: str, t: LiteralType["save", "reload"]) -> Literal:
+        """生成 save/load 节点
+
+        这两个节点很相似，提取公共部分到这里
+        """
         return (
             Literal(node_name).
-            requires(lambda src: src.has_permission(3)).
-            runs(self._post_manager.save).
+            requires(lambda src: src.has_permission(getattr(self._perm, t))).
+            on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.no_permission)), handled=True).
+            runs(getattr(self._post_manager, t)).
             then(
                 Literal('all').
-                requires(lambda src: src.has_permission(3)).
-                runs(self._post_manager.save)
+                runs(getattr(self._post_manager, t))
             ).
             then(
                 Literal('config').
-                requires(lambda src: src.has_permission(3)).
-                runs(self._post_manager.config_manager.save)
+                runs(getattr(self._post_manager.config_manager, t))
             ).
             then(
                 Literal('orders').
-                requires(lambda src: src.has_permission(3)).
-                runs(self._post_manager.order_manager.save)
+                runs(getattr(self._post_manager.order_manager, t))
             )
         )
 
+    def gen_save_node(self, node_name: str) -> Literal:
+        return self._gen_save_load_node(node_name, 'save')
+
     def gen_reload_node(self, node_name: str) -> Literal:
-        return (
-            Literal(node_name).
-            requires(lambda src: src.has_permission(3)).
-            runs(self._post_manager.reload).
-            then(
-                Literal('all').
-                requires(lambda src: src.has_permission(3)).
-                runs(self._post_manager.reload)
-            ).
-            then(
-                Literal('config').
-                requires(lambda src: src.has_permission(3)).
-                runs(self._post_manager.config_manager.load)
-            ).
-            then(
-                Literal('orders').
-                requires(lambda src: src.has_permission(3)).
-                runs(self._post_manager.order_manager.load)
-            )
-        )
+        return self._gen_save_load_node(node_name, 'reload')
 
     def generate_command_node(self, prefix: str) -> Literal:
         """生成指令树"""
         return (
             Literal(prefix).
+            requires(lambda src: src.has_permission(self._perm.root)).
+            on_error(RequirementNotMet, lambda src: src.reply(tr(Tags.no_permission)), handled=True).
             runs(lambda src: self.output_help_message(src, prefix)).
             then(self.gen_post_node('p')).
             then(self.gen_post_node('post')).

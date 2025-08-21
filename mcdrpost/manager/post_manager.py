@@ -163,5 +163,5 @@ class PostManager:
         self.order_manager.save()
 
     def reload(self):
-        self.config_manager.load()
-        self.order_manager.load()
+        self.config_manager.reload()
+        self.order_manager.reload()

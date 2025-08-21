@@ -23,9 +23,9 @@ class ConfigurationManager:
         self._server: PluginServerInterface = post_manager.server
         self.environment: Environment = Environment(self._server)
         self.configuration: Configuration | None = None
-        self.load()
+        self.reload()
 
-    def load(self) -> None:
+    def reload(self) -> None:
         self.configuration = self._server.load_config_simple(
             constants.CONFIG_FILE_NAME,
             target_class=Configuration,
@@ -33,7 +33,7 @@ class ConfigurationManager:
         )
 
     def save(self) -> None:
-        self._post_manager.server.save_config_simple(
+        self._server.save_config_simple(
             self.configuration,
             constants.CONFIG_FILE_NAME,
             file_format=constants.CONFIG_FILE_TYPE

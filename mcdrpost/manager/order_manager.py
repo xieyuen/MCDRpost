@@ -31,7 +31,7 @@ class OrderManager:
 
         # load data
         self._order_data: OrderData | None = None
-        self.load()
+        self.reload()
 
     def _build_index(self) -> None:
         """构建索引"""
@@ -58,7 +58,7 @@ class OrderManager:
             self._logger.error(tr(Tags.auto_fix.invalid_order, order_id))
             self._order_data.orders[order_id].id = int(order_id)
 
-    def load(self) -> None:
+    def reload(self) -> None:
         self._order_data = self._post_manager.server.load_config_simple(
             constants.ORDERS_DATA_FILE_NAME,
             target_class=OrderData,
@@ -172,7 +172,7 @@ class OrderManager:
         ]
 
     def has_unreceived_order(self, player: str) -> bool:
-        return not not self._receiver_orders[player]
+        return bool(self._receiver_orders[player])
 
     def pop_order(self, order_id: int) -> Order:
         order = self.get_order(order_id)
