@@ -73,3 +73,5 @@ mcdrpost:
     invalid_order: "将使用 {0} 作为订单 id"
   rcon:
     not_running: "Minecraft Server RCON 未开启，这有可能会影响获取速度甚至失败"
+  env:
+    server_no_start: "Minecraft 服务器未启动，无法获取版本信息"

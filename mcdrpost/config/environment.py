@@ -1,5 +1,8 @@
 from mcdreforged.api.types import PluginServerInterface
 
+from mcdrpost.utils import tr
+from mcdrpost.utils.translation_tags import Tags
+
 
 class Environment:
     def __init__(self, server: PluginServerInterface) -> None:
@@ -9,11 +12,13 @@ class Environment:
     def server_version(self) -> str:
         return self.server.get_server_information().version
 
-    @property
     def item_command(self) -> bool:
         """``item`` 命令是否可用
 
         在 Minecraft 1.17 之后，``replaceitem`` 命令被 ``item replace``代替
         这会影响到插件替换手中物品时执行的 Minecraft 命令
         """
+        if self.server_version is None:
+            self.server.logger.warning(tr(Tags.env.server_no_start))
+            return True
         return self.server_version >= "1.17"

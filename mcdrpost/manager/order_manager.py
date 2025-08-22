@@ -41,7 +41,7 @@ class OrderManager:
             self._sender_orders[order.sender].append(order.id)
             self._receiver_orders[order.receiver].append(order.id)
 
-    def __check_orders(self) -> None:
+    def _check_orders(self) -> None:
         """检查订单
 
         主要是订单的 ID 能不能对上索引
@@ -64,7 +64,7 @@ class OrderManager:
             target_class=OrderData,
             file_format=constants.ORDERS_DATA_FILE_TYPE
         )
-        self.__check_orders()
+        self._check_orders()
         self._build_index()
 
     def save(self) -> None:

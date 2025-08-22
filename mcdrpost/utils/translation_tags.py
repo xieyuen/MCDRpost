@@ -87,3 +87,6 @@ class Tags:
 
     class rcon:
         not_running = 'rcon.not_running'
+
+    class env:
+        server_no_start = 'env.server_no_start'
