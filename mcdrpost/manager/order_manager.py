@@ -179,3 +179,6 @@ class OrderManager:
         self.remove_order(order_id)
         self.save()
         return order
+
+
+__all__ = ['OrderManager']

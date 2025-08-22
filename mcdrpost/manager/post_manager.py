@@ -9,7 +9,7 @@ from mcdrpost.manager.config_manager import ConfigurationManager
 from mcdrpost.manager.order_manager import OrderManager
 from mcdrpost.order_data import OrderInfo
 from mcdrpost.utils import get_formatted_item, get_formatted_time, get_offhand_item, play_sound, tr
-from mcdrpost.utils.replace_offhand_item import replace_for_17
+from mcdrpost.utils.replace_offhand_item import replace_for_17, replace_for_lower_17
 from mcdrpost.utils.translation_tags import Tags
 from mcdrpost.utils.types import ReplaceFunction
 
@@ -29,13 +29,13 @@ class PostManager:
         self.config_manager: ConfigurationManager = ConfigurationManager(self)
         self.order_manager: OrderManager = OrderManager(self)
         self.command_manager: CommandManager = CommandManager(self)
-
-        self._replace: ReplaceFunction = replace_for_17
-        self._refresh_replace()
+        self._replace: ReplaceFunction = replace_for_lower_17
 
     def _refresh_replace(self) -> None:
         if self.config_manager.environment.item_command():
             self._replace: ReplaceFunction = replace_for_17
+        else:
+            self._replace: ReplaceFunction = replace_for_lower_17
 
     def replace(self, player: str, item: str) -> None:
         """替换副手物品
@@ -83,7 +83,7 @@ class PostManager:
 
             send_receive_tip()
 
-    def on_server_start(self, _server: PluginServerInterface):
+    def on_server_startup(self, _server: PluginServerInterface):
         self._refresh_replace()
 
     def on_server_stop(self, _server: PluginServerInterface, _server_return_code: int):
@@ -170,3 +170,6 @@ class PostManager:
     def reload(self):
         self.config_manager.reload()
         self.order_manager.reload()
+
+
+__all__ = ['PostManager']

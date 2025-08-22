@@ -9,3 +9,5 @@ ORDERS_DATA_FILE_TYPE: Literal["json"] = "json"
 OFFHAND_CODE = 'Inventory[{Slot:-106b}]'
 
 AIR = 'minecraft:air'
+
+END_LINE = '\n'

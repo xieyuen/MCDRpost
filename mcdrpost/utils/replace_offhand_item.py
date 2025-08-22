@@ -23,3 +23,6 @@ def replace_for_lower_17(server: PluginServerInterface, player: str, item: str) 
         item (str): 要替换的物品 id
     """
     server.execute(f'replaceitem entity {player} weapon.offhand {item}')
+
+
+__all__ = ['replace_for_17', 'replace_for_lower_17']

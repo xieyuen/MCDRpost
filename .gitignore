@@ -5,7 +5,7 @@
 .idea/
 
 # dependancies
-minecraft_data_api
+dependencies/
 
 # packed plugins
 *.mcdr

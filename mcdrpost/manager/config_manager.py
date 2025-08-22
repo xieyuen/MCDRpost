@@ -38,3 +38,6 @@ class ConfigurationManager:
             constants.CONFIG_FILE_NAME,
             file_format=constants.CONFIG_FILE_TYPE
         )
+
+
+__all__ = ['ConfigurationManager']

@@ -47,3 +47,6 @@ class Configuration(Serializable):
     auto_fix: bool = False
     receive_tip_delay: float = 3
     command_permission: CommandPermission = CommandPermission()
+
+
+__all__ = ['Configuration']

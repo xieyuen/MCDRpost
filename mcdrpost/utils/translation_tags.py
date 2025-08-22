@@ -1,3 +1,6 @@
+__all__ = ['Tags']
+
+
 class Tags:
     desc = 'desc'
     info_msg = 'info_msg'
@@ -90,3 +93,4 @@ class Tags:
 
     class env:
         server_no_start = 'env.server_no_start'
+        version = 'env.version'

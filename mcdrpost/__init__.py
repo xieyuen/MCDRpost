@@ -18,8 +18,8 @@ def on_load(server: PluginServerInterface, prev_module):
 def on_unload(server: PluginServerInterface):
     manager.on_unload(server)
 
-def on_server_start(server: PluginServerInterface):
-    manager.on_server_start(server)
+def on_server_startup(server: PluginServerInterface):
+    manager.on_server_startup(server)
 
 
 def on_server_stop(server: PluginServerInterface, server_return_code: int):

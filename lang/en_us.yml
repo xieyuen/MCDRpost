@@ -76,3 +76,4 @@ mcdrpost:
     not_running: "RCON is not running, It is highly recommended to enable RCON for faster query"
   env:
     server_no_start: "Minecraft Server is not started, Unable to get the version"
+    version: "Minecraft Server Version: {0}"

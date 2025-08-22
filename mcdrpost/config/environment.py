@@ -6,11 +6,11 @@ from mcdrpost.utils.translation_tags import Tags
 
 class Environment:
     def __init__(self, server: PluginServerInterface) -> None:
-        self.server = server
+        self._server = server
 
     @property
-    def server_version(self) -> str:
-        return self.server.get_server_information().version
+    def server_version(self) -> str | None:
+        return self._server.get_server_information().version
 
     def item_command(self) -> bool:
         """``item`` 命令是否可用
@@ -19,6 +19,9 @@ class Environment:
         这会影响到插件替换手中物品时执行的 Minecraft 命令
         """
         if self.server_version is None:
-            self.server.logger.warning(tr(Tags.env.server_no_start))
+            self._server.logger.warning(tr(Tags.env.server_no_start))
             return True
         return self.server_version >= "1.17"
+
+
+__all__ = ['Environment']

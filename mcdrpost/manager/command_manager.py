@@ -5,13 +5,12 @@ from mcdreforged.api.rtext import RAction, RColor, RText, RTextList
 from mcdreforged.api.types import CommandSource, InfoCommandSource, PluginServerInterface
 
 from mcdrpost.config.configuration import CommandPermission
+from mcdrpost.constants import END_LINE
 from mcdrpost.utils import tr
 from mcdrpost.utils.translation_tags import Tags
 
 if TYPE_CHECKING:
     from mcdrpost.manager.post_manager import PostManager  # noqa
-
-END_LINE = '\n'
 
 
 class CommandManager:
@@ -369,3 +368,6 @@ class CommandManager:
             then(self.gen_save_node('save')).
             then(self.gen_reload_node('reload'))
         )
+
+
+__all__ = ['CommandManager']
