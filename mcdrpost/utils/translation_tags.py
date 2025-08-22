@@ -1,3 +1,6 @@
+__all__ = ['Tags']
+
+
 class Tags:
     desc = 'desc'
     info_msg = 'info_msg'
@@ -87,3 +90,7 @@ class Tags:
 
     class rcon:
         not_running = 'rcon.not_running'
+
+    class env:
+        server_no_start = 'env.server_no_start'
+        version = 'env.version'

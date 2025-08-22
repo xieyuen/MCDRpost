@@ -22,18 +22,19 @@ def get_offhand_item(server: PluginServerInterface, player: str) -> dict | None:
     Returns:
         dict | None: 物品信息，若获取失败或返回 None
     """
-    mc_data_api = server.get_plugin_instance('minecraft_data_api')
+    # api = server.get_plugin_instance('minecraft_data_api')
+    import minecraft_data_api as api
 
     try:
         if server.is_rcon_running():
-            offhand_item = mc_data_api.convert_minecraft_json(
+            offhand_item = api.convert_minecraft_json(
                 server.rcon_query(f'data get entity {player} {constants.OFFHAND_CODE}')
             )
         else:
             server.logger.warning(tr(Tags.rcon.not_running))
-            offhand_item = mc_data_api.get_player_info(player, constants.OFFHAND_CODE)
+            offhand_item = api.get_player_info(player, constants.OFFHAND_CODE)
 
-        if type(offhand_item) == dict:
+        if isinstance(offhand_item, dict):
             return offhand_item
 
     except Exception as e:
@@ -49,3 +50,6 @@ def get_formatted_item(item_json: dict) -> str:
 def tr(tag: str, *args):
     """translation"""
     return PluginServerInterface.get_instance().tr(f'mcdrpost.{tag}', *args)
+
+
+__all__ = ['get_formatted_time', 'get_offhand_item', 'get_formatted_item', 'tr']

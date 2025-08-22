@@ -5,8 +5,13 @@
 .idea/
 
 # dependancies
-minecraft_data_api
+dependencies/
 
 # packed plugins
 *.mcdr
 *.pyz
+build/
+
+# uv
+uv.lock
+.python-version

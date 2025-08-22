@@ -1,0 +1,12 @@
+[project]
+name = "mcdrpost"
+version = "3.1.2"
+description = "一个用于邮寄/传送物品的MCDR插件"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "mcdreforged>=2.10.1",
+]
+authors = ["Flyky"]
+maintainers = ["xieyuen"]
+license = { file = "LICENSE" }

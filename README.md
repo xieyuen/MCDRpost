@@ -1,3 +1,7 @@
+# **THIS REPO WONNT BE RECEVING ANY UPDATE. SEE [MCDR-Plugins](https://github.com/xieyuen/MCDR-Plugins)**
+
+-------
+
 # MCDRpost
 
 A MCDR plugin for post/teleport items  
